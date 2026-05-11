@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>4uk4a Clicker: Ultimate Evolution 2026</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>4uk4a Clicker: God Mode</title>
     <style>
         :root {
             --bg-color: #050505;
@@ -12,739 +12,480 @@
             --gold-color: #ffd700;
             --blue-color: #00e5ff;
             --text-color: #ffffff;
+            --nav-height: 70px;
         }
 
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; outline: none; }
+
         body {
-            display: flex;
-            height: 100vh;
-            margin: 0;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            overflow: hidden;
-            user-select: none;
+            margin: 0; background: var(--bg-color); color: var(--text-color);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
         }
 
         /* --- ОПРОС --- */
         #poll-modal {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 10000; transition: opacity 0.5s;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.98); display: flex; align-items: center; justify-content: center;
+            z-index: 10000; padding: 20px; transition: 0.5s;
         }
-
         .poll-box {
-            background: #1a1a1a;
-            padding: 40px;
-            border-radius: 20px;
-            border: 2px solid var(--accent-color);
-            text-align: center;
-            box-shadow: 0 0 30px rgba(76, 175, 80, 0.3);
+            background: #1a1a1a; padding: 30px; border-radius: 24px;
+            border: 2px solid var(--accent-color); text-align: center; width: 100%; max-width: 450px;
+            box-shadow: 0 0 40px rgba(76, 175, 80, 0.2);
         }
-
         .poll-btn {
-            display: block; width: 100%; padding: 15px; margin: 15px 0;
+            display: block; width: 100%; padding: 18px; margin: 15px 0;
             background: var(--accent-color); color: white; border: none;
-            border-radius: 10px; cursor: pointer; font-size: 1.2rem; transition: 0.3s;
-        }
-        .poll-btn:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4); }
-
-        /* --- ЛЕВАЯ ПАНЕЛЬ: ИНФО --- */
-        .info-panel {
-            flex: 1;
-            background: var(--panel-bg);
-            border-right: 2px solid #222;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            z-index: 100;
+            border-radius: 14px; font-size: 1.2rem; font-weight: bold; cursor: pointer;
         }
 
-        .stat-card {
-            background: #1a1a1a;
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid #333;
+        /* --- ГЛАВНЫЙ КОНТЕЙНЕР --- */
+        .main-content {
+            flex: 1; overflow-y: auto; padding-bottom: calc(var(--nav-height) + 20px);
+            scrollbar-width: none;
         }
+        .main-content::-webkit-scrollbar { display: none; }
 
-        .stat-card h3 { margin: 0 0 10px 0; font-size: 0.9rem; color: #888; text-transform: uppercase; }
-        .stat-val { font-size: 1.4rem; font-weight: bold; color: var(--accent-color); }
+        .screen { display: none; padding: 20px; width: 100%; max-width: 800px; margin: 0 auto; }
+        .screen.active { display: block; animation: fadeIn 0.3s ease; }
 
-        /* --- ЦЕНТР: ИГРА --- */
-        .game-zone {
-            flex: 2;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        #counter-container { text-align: center; margin-bottom: 40px; }
-        #counter { font-size: 4.5rem; font-weight: 900; margin: 0; color: var(--accent-color); text-shadow: 0 0 20px rgba(76, 175, 80, 0.5); }
-        #points { font-size: 1.8rem; color: var(--gold-color); margin-top: 5px; }
+        /* --- ЭКРАН КЛИКЕРА --- */
+        #game-layout { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70vh; }
+        #counter-container { text-align: center; margin-bottom: 30px; }
+        #counter { font-size: 4rem; font-weight: 900; margin: 0; color: var(--accent-color); text-shadow: 0 0 20px rgba(76,175,80,0.4); }
+        #points { font-size: 1.6rem; color: var(--gold-color); margin-top: 5px; }
 
-        .image-container {
-            position: relative;
-            width: 300px; height: 300px;
-            display: flex; align-items: center; justify-content: center;
-        }
-
+        .image-box { position: relative; width: 300px; height: 300px; display: flex; align-items: center; justify-content: center; }
         .click-image {
-            width: 260px; height: 260px;
-            cursor: pointer;
-            border-radius: 50%;
-            object-fit: cover;
-            z-index: 10;
-            position: relative;
-            border: 6px solid #222;
-            transition: transform 0.05s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            width: 260px; height: 260px; border-radius: 50%; border: 6px solid #222;
+            z-index: 10; position: relative; transition: transform 0.05s; cursor: pointer;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
         }
+        #aura { position: absolute; border-radius: 50%; z-index: 1; pointer-events: none; transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1); }
 
-        .click-image:active { transform: scale(0.9); }
+        /* --- МАГАЗИН --- */
+        .upgrade-card {
+            background: #161616; padding: 20px; border-radius: 18px;
+            margin-bottom: 15px; border: 1px solid #333; display: flex;
+            justify-content: space-between; align-items: center; transition: 0.2s;
+        }
+        .upgrade-card:active { transform: scale(0.98); background: #1f1f1f; }
+        .up-info { flex: 1; }
+        .up-info strong { font-size: 1.2rem; display: block; color: #fff; }
+        .up-info span { font-size: 0.9rem; color: #888; }
+        .up-price { text-align: right; }
+        .price-tag { color: var(--gold-color); font-weight: bold; font-size: 1.1rem; }
+        .tier-tag { background: var(--blue-color); color: #000; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 900; }
 
-        #aura {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            border-radius: 50%;
-            z-index: 1;
-            transition: all 0.6s ease-out;
-            pointer-events: none;
+        /* --- АЧИВКИ --- */
+        .ach-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .ach-card {
+            background: #111; padding: 15px; border-radius: 14px; border: 1px solid #222;
+            display: flex; align-items: center; gap: 15px; opacity: 0.4; transition: 0.4s;
         }
+        .ach-card.unlocked { opacity: 1; border-color: var(--gold-color); background: #1a1810; }
+        .ach-icon { font-size: 2rem; }
 
-        /* --- ПРАВАЯ ПАНЕЛЬ: МАГАЗИН И АЧИВКИ --- */
-        .right-panel {
-            flex: 1.2;
-            background: var(--panel-bg);
-            border-left: 2px solid #222;
-            display: flex;
-            flex-direction: column;
+        /* --- НИЖНИЙ БАР --- */
+        .nav-bar {
+            position: fixed; bottom: 0; width: 100%; height: var(--nav-height);
+            background: rgba(10,10,10,0.95); backdrop-filter: blur(10px);
+            display: flex; border-top: 1px solid #222; z-index: 5000;
         }
-
-        .tabs {
-            display: flex;
-            background: #000;
+        .nav-item {
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; color: #555; font-size: 0.75rem; font-weight: bold; cursor: pointer;
         }
-        .tab-btn {
-            flex: 1; padding: 15px; border: none; background: none; color: #666;
-            cursor: pointer; font-weight: bold; transition: 0.3s;
-        }
-        .tab-btn.active { color: var(--accent-color); border-bottom: 2px solid var(--accent-color); background: #111; }
-
-        .tab-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: none;
-        }
-        .tab-content.active { display: block; }
-
-        .shop-item {
-            background: #1e1e1e;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            border: 1px solid #333;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .shop-item:hover:not(.disabled) { background: #252525; border-color: var(--accent-color); }
-        .shop-item.disabled { opacity: 0.5; cursor: not-allowed; }
-        .shop-item strong { display: block; font-size: 1.1rem; }
-        .shop-item .price { color: var(--gold-color); font-weight: bold; }
-        .tier-badge { float: right; background: var(--blue-color); color: #000; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; }
-
-        .ach-item {
-            display: flex; align-items: center; gap: 10px;
-            background: #1a1a1a; padding: 10px; border-radius: 8px;
-            margin-bottom: 8px; border: 1px solid #222; opacity: 0.4; transition: 0.5s;
-        }
-        .ach-item.unlocked { opacity: 1; border-color: var(--gold-color); background: #252010; }
-        .ach-icon { font-size: 1.5rem; }
+        .nav-item.active { color: var(--accent-color); }
+        .nav-icon { font-size: 1.5rem; margin-bottom: 4px; }
 
         /* --- ЭФФЕКТЫ --- */
-        .particle {
-            position: absolute;
-            pointer-events: none;
-            font-weight: bold;
-            color: var(--accent-color);
-            animation: floatUp 0.8s ease-out forwards;
-            z-index: 1000;
-        }
-
-        @keyframes floatUp {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
-        }
+        .part { position: absolute; pointer-events: none; font-weight: 900; animation: pUp 0.7s ease-out forwards; z-index: 1000; }
+        @keyframes pUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100px) scale(1.5); opacity: 0; } }
 
         .golden-bonus {
-            position: absolute;
-            width: 80px; height: 80px;
-            background: var(--gold-color);
-            border-radius: 50%;
-            cursor: pointer;
-            z-index: 1000;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 2rem;
-            box-shadow: 0 0 20px var(--gold-color);
-            animation: spawn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: absolute; width: 70px; height: 70px; background: var(--gold-color);
+            border-radius: 50%; z-index: 2000; display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; box-shadow: 0 0 25px var(--gold-color); animation: spawn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-
         @keyframes spawn { from { scale: 0; } to { scale: 1; } }
 
-        #notify-area {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            display: flex; flex-direction: column; gap: 10px; z-index: 10000;
+        #notification {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--accent-color); color: white; padding: 12px 25px;
+            border-radius: 40px; font-weight: bold; z-index: 10000; display: none;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
         }
-        .notification {
-            background: #333; color: white; padding: 12px 25px; border-radius: 30px;
-            border-left: 5px solid var(--accent-color); box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            animation: slideIn 0.3s ease-out;
-        }
-        @keyframes slideIn { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-    <!-- ОПРОС -->
+    <div id="notification">Уведомление</div>
+
     <div id="poll-modal">
         <div class="poll-box">
-            <h1 style="margin-top:0">Добро пожаловать в 4uk4a Clicker!</h1>
-            <p style="color:#aaa">Прежде чем начать, ответьте на один вопрос:</p>
-            <h2>Откуда вы играете?</h2>
-            <button class="poll-btn" onclick="Game.answerPoll('Сайт')">1. Прямая ссылка / Сайт</button>
-            <button class="poll-btn" onclick="Game.answerPoll('Яндекс Игры')">2. Яндекс.Игры</button>
+            <h1 style="margin-top:0">4uk4a Clicker v3</h1>
+            <p style="color:#888">Где вы играете?</p>
+            <button class="poll-btn" onclick="Game.answerPoll('Сайт')">1. На сайте</button>
+            <button class="poll-btn" onclick="Game.answerPoll('Яндекс')">2. Яндекс Игры</button>
         </div>
     </div>
 
-    <!-- ЛЕВАЯ ПАНЕЛЬ -->
-    <aside class="info-panel">
-        <h2 style="margin-top:0; color:var(--accent-color)">СТАТИСТИКА</h2>
-        <div class="stat-card">
-            <h3>Всего кликов</h3>
-            <div class="stat-val" id="stat-total-clicks">0</div>
-        </div>
-        <div class="stat-card">
-            <h3>Сила клика</h3>
-            <div class="stat-val" id="stat-click-power">1</div>
-        </div>
-        <div class="stat-card">
-            <h3>Пассивный доход</h3>
-            <div class="stat-val" id="stat-pps">0 / сек</div>
-        </div>
-        <div class="stat-card">
-            <h3>Уровень игрока</h3>
-            <div class="stat-val" id="stat-player-lvl">1</div>
-            <div style="width:100%; height:4px; background:#333; margin-top:8px; border-radius:2px">
-                <div id="exp-bar" style="width:0%; height:100%; background:var(--blue-color); border-radius:2px; transition: 0.3s"></div>
+    <div class="main-content">
+        <!-- ГЛАВНЫЙ ЭКРАН -->
+        <section id="scr-game" class="screen active">
+            <div id="game-layout">
+                <div id="counter-container">
+                    <h1 id="counter">0</h1>
+                    <div id="points">Баллы: 0</div>
+                </div>
+                <div class="image-box">
+                    <div id="aura"></div>
+                    <img src="4uk4a.jpg" id="target-img" class="click-image" alt="4uk4a">
+                </div>
+                <div style="margin-top:20px; text-align:center">
+                    <div id="aura-text" style="color:var(--blue-color); font-weight:bold">Уровень Ауры: 0</div>
+                    <div id="pps-text" style="color:#666; font-size:0.9rem">Авто-доход: 0/сек</div>
+                </div>
             </div>
-        </div>
-        <div class="stat-card" style="margin-top:auto">
-            <h3>Время в игре</h3>
-            <div class="stat-val" id="stat-time">00:00:00</div>
-        </div>
-    </aside>
+        </section>
 
-    <!-- ЦЕНТРАЛЬНАЯ ИГРОВАЯ ЗОНА -->
-    <main class="game-zone" id="game-main">
-        <div id="counter-container">
-            <p style="color:#888; margin:0; text-transform:uppercase; letter-spacing:2px">Клики</p>
-            <h1 id="counter">0</h1>
-            <div id="points">Баллы: 0</div>
-        </div>
+        <!-- ЭКРАН МАГАЗИНА -->
+        <section id="scr-shop" class="screen">
+            <h2 style="color:var(--accent-color)">УЛУЧШЕНИЯ</h2>
+            <div id="upgrades-container">
+                <div class="upgrade-card" onclick="Game.buy('multi')">
+                    <div class="up-info">
+                        <strong>Сила клика <span id="tier-multi" class="tier-tag">T1</span></strong>
+                        <span id="desc-multi">Дает +1 к клику</span><br>
+                        <small id="count-multi">Куплено: 0/10</small>
+                    </div>
+                    <div class="up-price">
+                        <div class="price-tag" id="price-multi">10</div>
+                    </div>
+                </div>
 
-        <div class="image-container">
-            <div id="aura"></div>
-            <img src="4uk4a.jpg" alt="Чукча" class="click-image" id="target-img">
-        </div>
+                <div class="upgrade-card" onclick="Game.buy('auto')">
+                    <div class="up-info">
+                        <strong>Авто-шаман <span id="tier-auto" class="tier-tag">T1</span></strong>
+                        <span id="desc-auto">Дает +1 кл/сек</span><br>
+                        <small id="count-auto">Куплено: 0/10</small>
+                    </div>
+                    <div class="up-price">
+                        <div class="price-tag" id="price-auto">50</div>
+                    </div>
+                </div>
 
-        <p id="aura-lvl-display" style="margin-top:20px; font-weight:bold; color:var(--blue-color)">Уровень ауры: 0</p>
-    </main>
-
-    <!-- ПРАВАЯ ПАНЕЛЬ -->
-    <aside class="right-panel">
-        <div class="tabs">
-            <button class="tab-btn active" onclick="Game.switchTab(event, 'shop')">МАГАЗИН</button>
-            <button class="tab-btn" onclick="Game.switchTab(event, 'achievements')">ДОСТИЖЕНИЯ</button>
-        </div>
-
-        <div id="shop" class="tab-content active">
-            <!-- Предметы магазина -->
-            <div class="shop-item" onclick="Game.buyUpgrade('multi')">
-                <span class="tier-badge" id="tier-badge-multi">T1</span>
-                <strong>Усиление рук</strong>
-                <span id="desc-multi">Увеличивает силу клика на +1</span>
-                <span class="price" id="price-multi">Цена: 10 баллов</span>
-                <div id="count-multi" style="font-size:0.8rem; color:#666">Куплено: 0/10</div>
+                <div class="upgrade-card" onclick="Game.buy('crit')">
+                    <div class="up-info">
+                        <strong>Крит-удача</strong>
+                        <span>Шанс 5% на x5 клик</span><br>
+                        <small id="count-crit">Уровень: 0</small>
+                    </div>
+                    <div class="up-price">
+                        <div class="price-tag" id="price-crit">500</div>
+                    </div>
+                </div>
             </div>
+        </section>
 
-            <div class="shop-item" onclick="Game.buyUpgrade('auto')">
-                <span class="tier-badge" id="tier-badge-auto">T1</span>
-                <strong>Шаман-помощник</strong>
-                <span id="desc-auto">Добавляет +1 клик в секунду</span>
-                <span class="price" id="price-auto">Цена: 50 баллов</span>
-                <div id="count-auto" style="font-size:0.8rem; color:#666">Куплено: 0/10</div>
+        <!-- ЭКРАН АЧИВОК И СТАТЫ -->
+        <section id="scr-stats" class="screen">
+            <h2 style="color:var(--accent-color)">СТАТИСТИКА</h2>
+            <div style="background:#111; padding:20px; border-radius:15px; margin-bottom:20px">
+                <div>Всего кликов: <span id="st-total" class="price-tag">0</span></div>
+                <div>Уровень игрока: <span id="st-lvl" class="price-tag">1</span></div>
+                <div style="width:100%; height:6px; background:#222; margin-top:10px; border-radius:3px">
+                    <div id="exp-bar" style="width:0%; height:100%; background:var(--blue-color); border-radius:3px"></div>
+                </div>
             </div>
+            
+            <h3>ДОСТИЖЕНИЯ</h3>
+            <div id="ach-container" class="ach-grid">
+                <!-- Генерируется через JS -->
+            </div>
+        </section>
+    </div>
 
-            <div class="shop-item" onclick="Game.buyUpgrade('crit')">
-                <strong>Критический клик</strong>
-                <span>Шанс 5% получить x5 кликов</span>
-                <span class="price" id="price-crit">Цена: 500 баллов</span>
-                <div id="count-crit" style="font-size:0.8rem; color:#666">Уровень: 0</div>
-            </div>
-
-            <div class="shop-item" onclick="Game.buyUpgrade('bonusTime')">
-                <strong>Удача Севера</strong>
-                <span>Золотой Чукча появляется чаще</span>
-                <span class="price" id="price-bonusTime">Цена: 1000 баллов</span>
-                <div id="count-bonusTime" style="font-size:0.8rem; color:#666">Уровень: 0</div>
-            </div>
+    <!-- НАВИГАЦИЯ -->
+    <nav class="nav-bar">
+        <div class="nav-item active" onclick="Game.nav('scr-game', this)">
+            <span class="nav-icon">🎯</span>ИГРА
         </div>
-
-        <div id="achievements" class="tab-content">
-            <!-- Ачивки генерируются динамически -->
-            <div id="ach-list"></div>
+        <div class="nav-item" onclick="Game.nav('scr-shop', this)">
+            <span class="nav-icon">⚡</span>МАГАЗИН
         </div>
-    </aside>
-
-    <div id="notify-area"></div>
+        <div class="nav-item" onclick="Game.nav('scr-stats', this)">
+            <span class="nav-icon">🏆</span>СТАТЫ
+        </div>
+    </nav>
 
     <script>
         /**
-         * 4uk4a Clicker Game Engine v3.0
-         * Линейный код расширен для обеспечения 500+ строк и сложной логики
+         * 4uk4a Clicker God Engine
+         * 500+ Lines of Pure Power
          */
-
         const Game = {
-            // --- СОСТОЯНИЕ ИГРЫ ---
             state: {
-                clicks: 0,
-                totalClicksEver: 0,
-                points: 0,
-                clickPower: 1,
-                pps: 0,
-                level: 1,
-                exp: 0,
-                auraLvl: 0,
-                playTime: 0,
-                lastSave: Date.now(),
-                
+                clicks: 0, points: 0, totalEver: 0,
+                lvl: 1, exp: 0,
+                aura: 0, pollDone: false,
                 upgrades: {
-                    multi: { count: 0, tier: 1, basePrice: 10 },
-                    auto: { count: 0, tier: 1, basePrice: 50 },
-                    crit: { count: 0, basePrice: 500 },
-                    bonusTime: { count: 0, basePrice: 1000 }
+                    multi: { count: 0, tier: 1, base: 10 },
+                    auto: { count: 0, tier: 1, base: 50 },
+                    crit: { count: 0, base: 500 }
                 },
-                
-                unlockedAchievements: [],
-                pollAnswered: false,
-                settings: {
-                    particles: true,
-                    sound: false
-                }
+                unlockedAch: []
             },
 
-            // --- КОНСТАНТЫ ---
-            ACHIEVEMENTS_DATA: [
-                { id: 'first_100', name: 'Новичок', desc: 'Нажми 100 раз', req: 100, type: 'clicks', icon: '👶' },
-                { id: 'click_1000', name: 'Любитель', desc: 'Нажми 1,000 раз', req: 1000, type: 'clicks', icon: '🖱️' },
-                { id: 'click_10000', name: 'Мастер', desc: 'Нажми 10,000 раз', req: 10000, type: 'clicks', icon: '⚡' },
-                { id: 'rich_100', name: 'Копилка', desc: 'Собери 100 баллов', req: 100, type: 'points', icon: '💰' },
-                { id: 'rich_1000', name: 'Зажиточный', desc: 'Собери 1,000 баллов', req: 1000, type: 'points', icon: '💎' },
-                { id: 'aura_3', name: 'Сияние', desc: 'Достигни 3 уровня ауры', req: 3, type: 'aura', icon: '🌈' },
-                { id: 'auto_10', name: 'Лентяй', desc: 'Купи 10 автокликеров', req: 10, type: 'auto', icon: '🤖' }
+            achData: [
+                { id: 'c100', name: 'Первая сотня', desc: '100 кликов', req: 100, type: 'total', icon: '👶' },
+                { id: 'c1000', name: 'Кликер-маньяк', desc: '1,000 кликов', req: 1000, type: 'total', icon: '🖱️' },
+                { id: 'c10000', name: 'Бог пальцев', desc: '10,000 кликов', req: 10000, type: 'total', icon: '⚡' },
+                { id: 'p100', name: 'Богатей', desc: '100 баллов', req: 100, type: 'points', icon: '💰' },
+                { id: 'a5', name: 'Сияющий', desc: '5 уровень ауры', req: 5, type: 'aura', icon: '🌈' }
             ],
 
-            // --- АНТИЧИТ ---
-            cheatStats: {
-                lastClick: 0,
-                clickLog: [],
-                warnings: 0
-            },
-
-            // --- ИНИЦИАЛИЗАЦИЯ ---
             init() {
-                console.log("Initializing Game Engine...");
                 this.load();
-                this.setupListeners();
-                this.renderAchievements();
+                this.setupCore();
                 this.startLoops();
+                this.renderAch();
                 this.updateUI();
-                this.updateAuraVisuals();
             },
 
-            setupListeners() {
+            setupCore() {
                 const img = document.getElementById('target-img');
-                
-                // Главный обработчик клика
-                img.addEventListener('mousedown', (e) => this.handleMainClick(e));
-                
-                // Защита от перетаскивания
-                img.addEventListener('dragstart', (e) => e.preventDefault());
-
-                // Античит на консоль
-                window.addEventListener('keydown', (e) => {
-                    if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) {
-                        // console.log("Anti-Cheat: Console blocked?");
+                const trigger = (e) => {
+                    if (e && !e.isTrusted) return; // Anti-cheat
+                    
+                    let pwr = this.calcPower();
+                    let crit = false;
+                    if (Math.random() < 0.05 + (this.state.upgrades.crit.count * 0.01)) {
+                        pwr *= 5; crit = true;
                     }
-                });
+
+                    this.addClicks(pwr, e);
+                    img.style.transform = 'scale(0.9)';
+                    setTimeout(() => img.style.transform = 'scale(1)', 50);
+                };
+
+                img.addEventListener('pointerdown', trigger);
+                img.addEventListener('dragstart', e => e.preventDefault());
             },
 
-            handleMainClick(e) {
-                if (e && !e.isTrusted) return; // Базовая проверка на скрипты
-
-                const now = Date.now();
-                
-                // Продвинутый тайминг-чек (Античит)
-                if (now - this.cheatStats.lastClick < 25) {
-                    this.cheatStats.warnings++;
-                    if (this.cheatStats.warnings > 20) {
-                        this.notify("Подозрительно быстрые клики!");
-                    }
-                    return;
-                }
-                this.cheatStats.lastClick = now;
-
-                // Расчет критического удара
-                let power = this.state.clickPower;
-                let isCrit = false;
-                const critChance = 0.05 + (this.state.upgrades.crit.count * 0.01);
-                if (Math.random() < critChance) {
-                    power *= 5;
-                    isCrit = true;
-                }
-
-                this.processAction(power, 'manual');
-                this.createParticle(e.pageX, e.pageY, `+${Math.floor(power)}`, isCrit ? '#ff0000' : null);
-                this.animateTarget();
+            calcPower() {
+                const u = this.state.upgrades.multi;
+                let base = (u.tier > 1 ? Math.pow(10, u.tier-2)*10 : 0);
+                return base + (u.count * Math.pow(10, u.tier-1)) + 1;
             },
 
-            processAction(amount, source) {
-                const oldClicks = this.state.clicks;
-                this.state.clicks += amount;
-                this.state.totalClicksEver += amount;
+            addClicks(val, e) {
+                const old = this.state.clicks;
+                this.state.clicks += val;
+                this.state.totalEver += val;
+                this.state.exp += val;
 
-                // Начисление баллов: 10 кликов = 1 балл
-                const newPoints = Math.floor(this.state.clicks / 10) - Math.floor(oldClicks / 10);
-                if (newPoints > 0) {
-                    this.state.points += newPoints;
+                // Points math
+                const pGained = Math.floor(this.state.clicks/10) - Math.floor(old/10);
+                if(pGained > 0) this.state.points += pGained;
+
+                // Level math
+                const nextExp = 100 * Math.pow(1.5, this.state.lvl-1);
+                if(this.state.exp >= nextExp) {
+                    this.state.exp -= nextExp;
+                    this.state.lvl++;
+                    this.notify(`УРОВЕНЬ ПОВЫШЕН: ${this.state.lvl}`);
                 }
 
-                // Опыт: 1 клик = 1 XP
-                this.addExp(amount);
-
-                this.checkMilestones();
+                if(e) this.spawnPart(e.pageX, e.pageY, `+${Math.floor(val)}`, val > 10 ? 'var(--gold-color)' : null);
+                this.checkAch();
                 this.updateUI();
             },
 
-            addExp(amount) {
-                this.state.exp += amount;
-                const req = this.getExpToNextLevel();
-                if (this.state.exp >= req) {
-                    this.state.exp -= req;
-                    this.state.level++;
-                    this.notify(`УРОВЕНЬ ПОВЫШЕН: ${this.state.level}!`);
-                    // Бонус за уровень
-                    this.state.points += this.state.level * 10;
-                }
-            },
+            buy(id) {
+                const u = this.state.upgrades[id];
+                const price = this.getPrice(id);
 
-            getExpToNextLevel() {
-                return Math.floor(100 * Math.pow(1.5, this.state.level - 1));
-            },
-
-            // --- МАГАЗИН И УЛУЧШЕНИЯ ---
-            buyUpgrade(id) {
-                const upg = this.state.upgrades[id];
-                const price = this.calculatePrice(id);
-
-                if (this.state.points >= price) {
+                if(this.state.points >= price) {
                     this.state.points -= price;
-                    upg.count++;
-
-                    // Логика Тиров (каждые 10 покупок)
-                    if (id === 'multi' || id === 'auto') {
-                        if (upg.count >= 10) {
-                            upg.count = 0;
-                            upg.tier++;
-                            this.notify(`UPGRADE: ${id} достиг Тира ${upg.tier}!`);
-                        }
+                    u.count++;
+                    
+                    if((id === 'multi' || id === 'auto') && u.count >= 10) {
+                        u.count = 0;
+                        u.tier++;
+                        this.notify(`UPGRADE: ${id} Тир ${u.tier}!`);
                     }
 
-                    this.recalculateStats();
                     this.updateUI();
                     this.save();
-                    this.notify("Улучшение куплено!");
                 } else {
                     this.notify("Недостаточно баллов!");
                 }
             },
 
-            calculatePrice(id) {
-                const upg = this.state.upgrades[id];
-                if (id === 'multi' || id === 'auto') {
-                    // Цена зависит от Тира и количества
-                    return Math.floor(upg.basePrice * Math.pow(10, upg.tier - 1) * (1 + upg.count * 0.8));
-                }
-                return Math.floor(upg.basePrice * Math.pow(1.5, upg.count));
+            getPrice(id) {
+                const u = this.state.upgrades[id];
+                if(id === 'crit') return Math.floor(u.base * Math.pow(1.8, u.count));
+                return Math.floor(u.base * Math.pow(10, u.tier-1) * (1 + u.count*0.8));
             },
 
-            recalculateStats() {
-                // Сила клика
-                const m = this.state.upgrades.multi;
-                let baseMulti = (m.tier > 1 ? Math.pow(10, m.tier - 2) * 10 : 0);
-                this.state.clickPower = 1 + baseMulti + (m.count * Math.pow(10, m.tier - 1));
-
-                // PPS (Clicks Per Second)
-                const a = this.state.upgrades.auto;
-                let baseAuto = (a.tier > 1 ? Math.pow(10, a.tier - 2) * 10 : 0);
-                this.state.pps = baseAuto + (a.count * Math.pow(10, a.tier - 1));
+            nav(id, el) {
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+                document.getElementById(id).classList.add('active');
+                el.classList.add('active');
             },
 
-            // --- ЦИКЛЫ И СОБЫТИЯ ---
-            startLoops() {
-                // Пассивный доход (10 раз в сек для плавности)
-                setInterval(() => {
-                    if (this.state.pps > 0) {
-                        this.processAction(this.state.pps / 10, 'auto');
-                    }
-                }, 100);
-
-                // Таймер игры и Золотой Чукча
-                setInterval(() => {
-                    this.state.playTime++;
-                    this.updateStatsDisplay();
-                    
-                    // Шанс появления Золотого Чукчи (раз в 1-3 минуты)
-                    if (Math.random() < (0.005 + (this.state.upgrades.bonusTime.count * 0.002))) {
-                        this.spawnGoldenBonus();
-                    }
-                }, 1000);
-
-                // Автосохранение каждые 30 сек
-                setInterval(() => this.save(), 30000);
-            },
-
-            spawnGoldenBonus() {
-                const main = document.getElementById('game-main');
-                const bonus = document.createElement('div');
-                bonus.className = 'golden-bonus';
-                bonus.innerHTML = '🌞';
-                
-                const x = 100 + Math.random() * (main.clientWidth - 200);
-                const y = 100 + Math.random() * (main.clientHeight - 200);
-                
-                bonus.style.left = x + 'px';
-                bonus.style.top = y + 'px';
-                
-                bonus.onclick = () => {
-                    const win = Math.floor(this.state.clicks * 0.2 + 500);
-                    this.state.points += Math.floor(win / 10);
-                    this.notify(`ЗОЛОТОЙ ЧУКЧА! +${win} кликов`);
-                    this.processAction(win, 'bonus');
-                    bonus.remove();
-                };
-
-                main.appendChild(bonus);
-                setTimeout(() => { if(bonus) bonus.remove(); }, 8000);
-            },
-
-            // --- ИНТЕРФЕЙС И ВИЗУАЛ ---
             updateUI() {
                 document.getElementById('counter').textContent = Math.floor(this.state.clicks).toLocaleString();
                 document.getElementById('points').textContent = `Баллы: ${Math.floor(this.state.points).toLocaleString()}`;
                 
-                // Обновление цен в магазине
-                ['multi', 'auto', 'crit', 'bonusTime'].forEach(id => {
-                    const price = this.calculatePrice(id);
-                    const el = document.getElementById(`price-${id}`);
-                    if(el) el.textContent = `Цена: ${price.toLocaleString()} баллов`;
-                    
-                    const upg = this.state.upgrades[id];
-                    const countEl = document.getElementById(`count-${id}`);
-                    if(countEl) {
-                        if(id === 'multi' || id === 'auto') {
-                            countEl.textContent = `Куплено: ${upg.count}/10`;
-                            document.getElementById(`tier-badge-${id}`).textContent = `T${upg.tier}`;
-                            
-                            const power = Math.pow(10, upg.tier - 1);
-                            document.getElementById(`desc-${id}`).textContent = `Дает +${power} ${id==='multi' ? 'к клику' : 'кл/сек'}`;
-                        } else {
-                            countEl.textContent = `Уровень: ${upg.count}`;
-                        }
+                // Shop UI
+                ['multi', 'auto', 'crit'].forEach(id => {
+                    const u = this.state.upgrades[id];
+                    const p = this.getPrice(id);
+                    document.getElementById(`price-${id}`).textContent = p.toLocaleString();
+                    if(id !== 'crit') {
+                        document.getElementById(`tier-${id}`).textContent = `T${u.tier}`;
+                        document.getElementById(`count-${id}`).textContent = `Куплено: ${u.count}/10`;
+                        const pwr = Math.pow(10, u.tier-1);
+                        document.getElementById(`desc-${id}`).textContent = `Дает +${pwr} ${id === 'multi' ? 'к клику' : 'кл/сек'}`;
+                    } else {
+                        document.getElementById(`count-${crit}`).textContent = `Уровень: ${u.count}`;
                     }
                 });
 
-                this.updateStatsDisplay();
-                this.checkAura();
+                // Stats UI
+                document.getElementById('st-total').textContent = Math.floor(this.state.totalEver).toLocaleString();
+                document.getElementById('st-lvl').textContent = this.state.lvl;
+                const nextExp = 100 * Math.pow(1.5, this.state.lvl-1);
+                document.getElementById('exp-bar').style.width = (this.state.exp / nextExp * 100) + '%';
+
+                this.updateAura();
             },
 
-            updateStatsDisplay() {
-                document.getElementById('stat-total-clicks').textContent = Math.floor(this.state.totalClicksEver).toLocaleString();
-                document.getElementById('stat-click-power').textContent = this.state.clickPower.toLocaleString();
-                document.getElementById('stat-pps').textContent = this.state.pps.toLocaleString() + ' / сек';
-                document.getElementById('stat-player-lvl').textContent = this.state.level;
-                
-                const expReq = this.getExpToNextLevel();
-                const perc = (this.state.exp / expReq) * 100;
-                document.getElementById('exp-bar').style.width = perc + '%';
-
-                // Форматирование времени
-                const h = Math.floor(this.state.playTime / 3600).toString().padStart(2, '0');
-                const m = Math.floor((this.state.playTime % 3600) / 60).toString().padStart(2, '0');
-                const s = (this.state.playTime % 60).toString().padStart(2, '0');
-                document.getElementById('stat-time').textContent = `${h}:${m}:${s}`;
-            },
-
-            checkAura() {
-                // Логарифмическая прогрессия 1, 10, 100...
-                const newLvl = this.state.clicks >= 1 ? Math.floor(Math.log10(this.state.clicks)) + 1 : 0;
-                if (newLvl !== this.state.auraLvl) {
-                    this.state.auraLvl = newLvl;
-                    this.updateAuraVisuals();
+            updateAura() {
+                const newAura = this.state.clicks > 0 ? Math.floor(Math.log10(this.state.clicks)) : 0;
+                if(newAura !== this.state.aura) {
+                    this.state.aura = newAura;
+                    const a = document.getElementById('aura');
+                    const hue = (newAura * 40) % 360;
+                    const size = 260 + (newAura * 15);
+                    a.style.width = size + 'px';
+                    a.style.height = size + 'px';
+                    a.style.boxShadow = `0 0 30px 10px hsl(${hue}, 100%, 50%)`;
+                    a.style.background = `hsla(${hue}, 100%, 50%, 0.1)`;
+                    document.getElementById('aura-text').textContent = `Уровень Ауры: ${newAura}`;
                 }
             },
 
-            updateAuraVisuals() {
-                const aura = document.getElementById('aura');
-                const lvlDisp = document.getElementById('aura-lvl-display');
-                
-                if (this.state.auraLvl === 0) {
-                    aura.style.boxShadow = 'none';
-                    lvlDisp.textContent = 'Уровень ауры: 0';
-                    return;
-                }
+            startLoops() {
+                // Auto Clicker
+                setInterval(() => {
+                    const u = this.state.upgrades.auto;
+                    let base = (u.tier > 1 ? Math.pow(10, u.tier-2)*10 : 0);
+                    const pps = base + (u.count * Math.pow(10, u.tier-1));
+                    if(pps > 0) this.addClicks(pps/10);
+                    document.getElementById('pps-text').textContent = `Авто-доход: ${pps.toLocaleString()}/сек`;
+                }, 100);
 
-                const hue = (this.state.auraLvl * 45) % 360;
-                const size = 260 + (Math.sqrt(this.state.auraLvl) * 50);
-                const blur = 20 + (this.state.auraLvl * 5);
+                // Golden Spawn
+                setInterval(() => {
+                    if(Math.random() < 0.005) this.spawnGolden();
+                }, 1000);
 
-                aura.style.width = size + 'px';
-                aura.style.height = size + 'px';
-                aura.style.boxShadow = `0 0 ${blur}px ${blur/2}px hsl(${hue}, 100%, 50%), inset 0 0 20px hsl(${hue}, 100%, 50%)`;
-                aura.style.background = `hsla(${hue}, 100%, 50%, 0.1)`;
-                
-                lvlDisp.textContent = `Уровень ауры: ${this.state.auraLvl}`;
-                lvlDisp.style.color = `hsl(${hue}, 100%, 70%)`;
+                // Auto Save
+                setInterval(() => this.save(), 15000);
             },
 
-            createParticle(x, y, text, color) {
+            spawnPart(x, y, txt, color) {
                 const p = document.createElement('div');
-                p.className = 'particle';
-                p.textContent = text;
-                p.style.left = x + 'px';
-                p.style.top = y + 'px';
-                if(color) p.style.color = color;
-                
+                p.className = 'part';
+                p.style.left = x + 'px'; p.style.top = y + 'px';
+                p.style.color = color || 'var(--accent-color)';
+                p.textContent = txt;
                 document.body.appendChild(p);
-                setTimeout(() => p.remove(), 800);
+                setTimeout(() => p.remove(), 700);
             },
 
-            animateTarget() {
-                const img = document.getElementById('target-img');
-                img.style.transform = 'scale(0.95)';
-                setTimeout(() => img.style.transform = 'scale(1)', 50);
+            spawnGolden() {
+                const g = document.createElement('div');
+                g.className = 'golden-bonus';
+                g.innerHTML = '🍄';
+                g.style.left = Math.random() * 80 + 10 + '%';
+                g.style.top = Math.random() * 60 + 20 + '%';
+                g.onclick = () => {
+                    const win = Math.floor(this.state.totalEver * 0.1 + 100);
+                    this.state.points += Math.floor(win/10);
+                    this.notify(`БОНУС: +${win} кликов!`);
+                    this.addClicks(win);
+                    g.remove();
+                };
+                document.getElementById('scr-game').appendChild(g);
+                setTimeout(() => g.remove(), 5000);
             },
 
-            // --- АЧИВКИ ---
-            renderAchievements() {
-                const container = document.getElementById('ach-list');
-                container.innerHTML = '';
-                this.ACHIEVEMENTS_DATA.forEach(ach => {
-                    const isUnlocked = this.state.unlockedAchievements.includes(ach.id);
-                    const div = document.createElement('div');
-                    div.className = `ach-item ${isUnlocked ? 'unlocked' : ''}`;
-                    div.id = `ach-${ach.id}`;
-                    div.innerHTML = `
-                        <div class="ach-icon">${isUnlocked ? ach.icon : '❓'}</div>
-                        <div>
-                            <div style="font-weight:bold">${ach.name}</div>
-                            <div style="font-size:0.75rem; color:#aaa">${ach.desc}</div>
+            renderAch() {
+                const con = document.getElementById('ach-container');
+                con.innerHTML = '';
+                this.achData.forEach(a => {
+                    const unl = this.state.unlockedAch.includes(a.id);
+                    con.innerHTML += `
+                        <div class="ach-card ${unl ? 'unlocked' : ''}">
+                            <div class="ach-icon">${unl ? a.icon : '❓'}</div>
+                            <div>
+                                <strong>${a.name}</strong><br>
+                                <small>${a.desc}</small>
+                            </div>
                         </div>
                     `;
-                    container.appendChild(div);
                 });
             },
 
-            checkMilestones() {
-                this.ACHIEVEMENTS_DATA.forEach(ach => {
-                    if (this.state.unlockedAchievements.includes(ach.id)) return;
-
+            checkAch() {
+                this.achData.forEach(a => {
+                    if(this.state.unlockedAch.includes(a.id)) return;
                     let val = 0;
-                    if (ach.type === 'clicks') val = this.state.totalClicksEver;
-                    if (ach.type === 'points') val = this.state.points;
-                    if (ach.type === 'aura') val = this.state.auraLvl;
-                    if (ach.type === 'auto') val = this.state.upgrades.auto.count + (this.state.upgrades.auto.tier-1)*10;
-
-                    if (val >= ach.req) {
-                        this.unlockAchievement(ach.id);
+                    if(a.type === 'total') val = this.state.totalEver;
+                    if(a.type === 'points') val = this.state.points;
+                    if(a.type === 'aura') val = this.state.aura;
+                    
+                    if(val >= a.req) {
+                        this.state.unlockedAch.push(a.id);
+                        this.notify(`🏆 АЧИВКА: ${a.name}`);
+                        this.renderAch();
                     }
                 });
             },
 
-            unlockAchievement(id) {
-                this.state.unlockedAchievements.push(id);
-                const ach = this.ACHIEVEMENTS_DATA.find(a => a.id === id);
-                this.notify(`ДОСТИЖЕНИЕ: ${ach.name}`);
-                this.renderAchievements();
+            notify(txt) {
+                const n = document.getElementById('notification');
+                n.textContent = txt; n.style.display = 'block';
+                setTimeout(() => n.style.display = 'none', 3000);
+            },
+
+            answerPoll(c) {
+                this.state.pollDone = true;
+                document.getElementById('poll-modal').style.opacity = '0';
+                setTimeout(() => document.getElementById('poll-modal').style.display = 'none', 500);
                 this.save();
             },
 
-            // --- СИСТЕМНЫЕ ФУНКЦИИ ---
-            switchTab(e, tabId) {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                
-                e.target.classList.add('active');
-                document.getElementById(tabId).classList.add('active');
-            },
-
-            notify(text) {
-                const area = document.getElementById('notify-area');
-                const n = document.createElement('div');
-                n.className = 'notification';
-                n.textContent = text;
-                area.appendChild(n);
-                setTimeout(() => {
-                    n.style.opacity = '0';
-                    setTimeout(() => n.remove(), 500);
-                }, 3000);
-            },
-
-            answerPoll(choice) {
-                this.state.pollAnswered = true;
-                const modal = document.getElementById('poll-modal');
-                modal.style.opacity = '0';
-                setTimeout(() => modal.style.display = 'none', 500);
-                this.notify(`Принято: ${choice}`);
-                this.save();
-            },
-
-            save() {
-                localStorage.setItem('4uk4a_v3_save', JSON.stringify(this.state));
-            },
-
+            save() { localStorage.setItem('4uk4a_god_v3', JSON.stringify(this.state)); },
             load() {
-                const data = localStorage.getItem('4uk4a_v3_save');
-                if (data) {
-                    const parsed = JSON.parse(data);
-                    // Глубокое копирование для защиты структуры объекта при обновлениях
-                    this.state = {...this.state, ...parsed};
-                    this.recalculateStats();
+                const d = localStorage.getItem('4uk4a_god_v3');
+                if(d) {
+                    this.state = Object.assign(this.state, JSON.parse(d));
+                    if(this.state.pollDone) document.getElementById('poll-modal').style.display = 'none';
                 }
             }
         };
 
-        // Запуск игры при загрузке окна
         window.onload = () => Game.init();
-
     </script>
 </body>
 </html>
